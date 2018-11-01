@@ -1,5 +1,6 @@
 (ns sicp-in-clojure.01-abstractions-procedures.exercise
-  "All 46 exercises from the Chapter 1.")
+  "All 46 exercises from the Chapter 1."
+  (:require [sicp-in-clojure.01-abstractions-procedures.core :as c]))
 
 ;;; Ex. 1.2 (p.21)
 (/ (+ 5
@@ -15,6 +16,8 @@
 
 
 ;;; Ex. 1.3 (p.21)
+
+
 (defn drop-min-and-sum
   "Takes 3 numbers as arguments and returns the sum of the two larger numbers"
   [x y z]
@@ -30,6 +33,8 @@
 ;;; Ex. 1.4 (p.21)
 ;;; Observer that our model of evaluation allows for combinations whose operators
 ;;; are compound experssions. How would you describe the behavior of the following?
+
+
 (defn a-plus-abs-b [a b]
   ((if (> b 0) + -)
    a
@@ -59,3 +64,73 @@
      0
      ~y))
 (test 0 (p))
+
+
+;;; Ex. 1.6 (p.25)
+;;; Not seeing why `if` has to be special form...
+
+
+(defn new-if [pred then else]
+  (cond
+    pred then
+    :else else))
+(new-if (= 2 3) 0 5)
+;; => 5
+(new-if (= 1 1) 0 5)
+;; => 0
+
+;; now let's try to rewrite square root with it
+(defn sqrt-iter [guess x]
+  (new-if (c/good-enough? guess x)
+          guess
+          (sqrt-iter (c/improve guess x)
+                     x)))
+(defn sqrt [x]
+  (-> (sqrt-iter 1 x)
+      double))
+;; what happens now ?!
+;; (sqrt 4)
+;; => infinite loop (no stack overflow because it's iterative - tail recursion)
+
+
+;;; Ex. 1.7 (p.25)
+;;; See solution: http://community.schemewiki.org/?sicp-ex-1.7
+;;; Improve good-enough? fn to work well with small and large numbers.
+;;; Existing implementation is bad for small numbers because it the test is based on the absolute difference
+;;; between the reality and the guess which just doesn't work for small numbers:
+(c/sqrt 0.000001)
+;; => 0.031260655525445276
+(* 0.031260655525445276 0.031260655525445276)
+;; => 9.772285838805523E-4
+;;; It's also inappropriate for large numbers because of limited preciion of arithmentic operations
+;; (But it's also really slow so we cannot effectively test it)
+;; (c/sqrt 1000000)
+
+
+;; to improve:
+;; Track how guess changes from one iteration to another and stop
+;; once the change is a small fraction of the guess
+(defn better-good-enough? [old-guess new-guess]
+  (< (c/abs (/ (- old-guess new-guess)
+               new-guess))
+     0.001))
+
+(defn sqrt-iter
+  ([guess x] (sqrt-iter x guess x))
+  ([old-guess new-guess x]
+   (if (better-good-enough? old-guess new-guess)
+     new-guess
+     (sqrt-iter
+      new-guess
+      (c/improve new-guess x)
+      x))))
+(defn sqrt
+  [x]
+  (-> (sqrt-iter 1 x)
+      double))
+
+(sqrt 4)
+;; => 2.000000092922295
+(sqrt 0.000001)
+;; => 0.0010000001533016628
+(sqrt 0.000001)

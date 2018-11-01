@@ -23,18 +23,19 @@
 ;;; 1.1.7 Example: Square Roots by Newton's Method
 ;; the first quite bad implementation of `good-enough?`
 ;; it's bad because it doesn't really for for either small or large numbers
-(defn- good-enough? [guess x]
+(defn good-enough? [guess x]
   (< (abs (- (square guess)
              x))
      0.001))
 
-(defn- avg [x y]
+(defn avg [x y]
   (/ (+ x y) 2))
 
-(defn- improve [guess x]
+(defn improve [guess x]
   (avg guess (/ x guess)))
 
-(defn- sqrt-iter [guess x]
+(defn sqrt-iter
+  [guess x]
   (if (good-enough? guess x)
     guess
     (sqrt-iter (improve guess x)
