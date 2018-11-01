@@ -115,22 +115,42 @@
                new-guess))
      0.001))
 
-(defn sqrt-iter
-  ([guess x] (sqrt-iter x guess x))
-  ([old-guess new-guess x]
+(defn root-iter
+  ([improve-fn guess x] (root-iter improve-fn x guess x))
+  ([improve-fn old-guess new-guess x]
    (if (better-good-enough? old-guess new-guess)
      new-guess
-     (sqrt-iter
+     (root-iter
+      improve-fn
       new-guess
-      (c/improve new-guess x)
+      (improve-fn new-guess x)
       x))))
+
 (defn sqrt
   [x]
-  (-> (sqrt-iter 1 x)
+  (-> (root-iter c/improve 1 x)
       double))
 
 (sqrt 4)
 ;; => 2.000000092922295
 (sqrt 0.000001)
 ;; => 0.0010000001533016628
-(sqrt 0.000001)
+
+
+;;; 1.8 (p.26)
+;;; Newton's formular for cube roots. Better guess is derived via following formula:
+;;; (x/y^2 + 2y) / 3
+;;; Check solution: https://wizardbook.wordpress.com/2010/11/24/exercise-1-8/
+(defn cube-improve [guess x]
+  (let [y guess]
+    (/ (+ (/ x (* y y))
+          (* 2 y))
+       3)))
+
+(defn cube-root [x]
+  (-> (root-iter cube-improve 1 x)
+      double))
+
+(cube-root 8)
+(cube-root 27)
+(cube-root -8)
