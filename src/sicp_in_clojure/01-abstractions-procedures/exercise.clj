@@ -174,6 +174,7 @@
 (inc (inc (plus 2 5)))
 (inc (inc (plus 2 5)))
 (inc (inc (inc (plus 1 5))))
+
 (inc (inc (inc (inc (plus 0 5)))))
 
 (inc (inc (inc (inc 5))))
@@ -261,3 +262,37 @@
 ;; (h 5)
 ;; => 2^65536 (stackoverflow)
 ;; => h: 2^(2^(2^(2^(... )))) // there are n twos in this definition
+
+
+;;; Ex. 1.11 (p. 42)
+;; recursive solution
+(defn f3 [n]
+  (if (< n 3)
+    n
+    (+ (f3 (- n 1))
+       (* 2 (f3 (- n 2)))
+       (* 3 (f3 (- n 3))))))
+(f3 2)
+(f3 3)
+(f3 5)
+
+;; iterative solution
+(defn f3iter
+  [a b c counter]
+  (if (zero? counter)
+    c
+    (+ (f3iter (+ a (* 2 b) (* 3 c))
+           a
+           b
+           (dec counter)))))
+(defn f3i
+  [n]
+  {:pre [(nat-int? n)]}
+  (f3iter 2 1 0 n))
+(f3i -1)
+(f3i 0)
+(f3i 1)
+(f3i 2)
+(f3i 3)
+(f3i 5)
+(f3i 6)
