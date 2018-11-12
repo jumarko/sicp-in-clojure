@@ -296,3 +296,18 @@
 (f3i 3)
 (f3i 5)
 (f3i 6)
+
+
+;;; Ex. 1.12 (p. 42) Pascal's Triangle
+(defn pascal-row
+  "Computes nth row of pascals triangle starting from the row 0."
+  [previous-row]
+  (mapv +'
+        (cons 0 previous-row)
+        (concat previous-row [0])))
+(defn pascal
+  "Returns first n rows of pascal's triangle."
+  [n]
+  (let [initial-row [1]]
+    (take n (iterate pascal-row initial-row))))
+(pascal 5)
