@@ -1,4 +1,4 @@
-(ns sicp-in-clojure.01-abstractions-procedures.core)
+(ns sicp-in-clojure.01-abstractions-procedures.01-elements)
 
 ;;; 1.1.4 Compound Procedures
 
@@ -109,7 +109,7 @@
             (if (zero? counter)
               b
               ;; for larger n-s you'd have to use `+'` here to avoid integer overflow
-              (fib-iter (+ a b) a (dec counter))))]
+              (fib-iter (+' a b) a (dec counter))))]
     (fib-iter 1 0 n)))
 
 (fibi 0)
@@ -118,3 +118,38 @@
 ;; and it's much faster too:
 (time (fibi 35))
 ;; => "Elapsed time: 0.0512 msecs"
+(fibi 100)
+
+
+;;; 1.2.2 Example: Counting Change (p. 40)
+;;; Write a procedure to compute the number of ways to change ani given amount of money
+;;; given that we have half-dollars, quarters, dimes, nickles, pennies
+(defn- first-denomination [kinds-of-coins]
+  (condp = kinds-of-coins
+    1 1
+    2 5
+    3 10
+    4 25
+    5 50))
+
+(defn change
+  ([amount] (change amount 5))
+  ([amount kinds-of-coins]
+   (cond
+     (zero? amount)
+     1
+     (or (neg? amount) (zero? kinds-of-coins))
+     0
+
+     :else
+     (+ (change amount (dec kinds-of-coins))
+        (change (- amount (first-denomination
+
+                           kinds-of-coins)))))))
+
+;;; WTF??
+(change 10)
+
+
+
+
