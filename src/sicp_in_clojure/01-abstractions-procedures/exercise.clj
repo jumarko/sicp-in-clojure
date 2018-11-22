@@ -1,6 +1,6 @@
 (ns sicp-in-clojure.01-abstractions-procedures.exercise
   "All 46 exercises from the Chapter 1."
-  (:require [sicp-in-clojure.01-abstractions-procedures.core :as c]))
+  (:require [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]))
 
 ;;; Ex. 1.2 (p.21)
 (/ (+ 5
@@ -289,13 +289,14 @@
   [n]
   {:pre [(nat-int? n)]}
   (f3iter 2 1 0 n))
-(f3i -1)
-(f3i 0)
-(f3i 1)
-(f3i 2)
-(f3i 3)
-(f3i 5)
-(f3i 6)
+(comment 
+  (f3i -1)
+  (f3i 0)
+  (f3i 1)
+  (f3i 2)
+  (f3i 3)
+  (f3i 5)
+  (f3i 6))
 
 
 ;;; Ex. 1.12 (p. 42) Pascal's Triangle
@@ -310,4 +311,41 @@
   [n]
   (let [initial-row [1]]
     (take n (iterate pascal-row initial-row))))
-(pascal 5)
+(comment
+  (pascal 5)
+
+  )
+
+
+;;; Ex. 1.13 (p.42) Proof -> skipped.
+;;; This could be based on polynoms exponents (see Pascal triangel)
+
+
+;;; Ex 1.14 (p. 44)
+;;; See https://wizardbook.wordpress.com/2010/11/24/exercise-1-14/
+
+
+;;; Ex 1.15 (p. 44)
+;;; sine approximation
+
+(defn cube [x] (* x x x))
+
+(defn p [x]
+  (- (* 3 x)
+     (* 4 (cube x))))
+
+(defn sine [x]
+  (if (< (c/abs x) 0.1)
+    ;; angle is small enough therefore (sine x) is very close to the x itself
+    x
+    (p (sine (/ x 3)))))
+
+(sine 0.523)
+
+;; evaluated five times:
+(sine 12.15)
+
+;; order of growth:
+;; - space: log3(n)
+;; - time: log3(n)
+;; Rationale: 0.1 is constant and in three steps we're roughly at 3: 0.1 * 3 * 3 *3 => 2.7
