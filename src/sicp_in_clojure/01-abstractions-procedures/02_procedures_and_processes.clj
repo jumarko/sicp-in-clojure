@@ -1,4 +1,5 @@
-(ns sicp-in-clojure.01-abstractions-procedures.02-procedures-and-processes)
+(ns sicp-in-clojure.01-abstractions-procedures.02-procedures-and-processes
+  (:require [sicp-in-clojure.01-abstractions-procedures.01-elements :as e]))
 
 ;;; 1.2.1 Factorials and recursion
 
@@ -97,3 +98,39 @@
 
 
 
+;;; 1.2.4 Exponentiation
+;;; Fast exponentiation algorithm using succcessive squaring
+;;; See also exercise.clj for iterative version
+
+(defn exp [base n]
+  (if (zero? n)
+    1
+    ;; notice `*'` for arbitrary precision
+    (*' base (exp base (dec n)))))
+(time (exp 2 10) )
+;; be careful to avoid stackoverflow -> use loop-recur in `exp`
+;; if you want to support exponents >> 1000
+(time (exp 2 1000) )
+;; => "Elapsed time: 0.62659 msecs"
+
+(defn square' [x] (*' x x))
+
+(defn fast-exp
+  [base n]
+  (cond
+    (zero? n)
+    1
+
+    (even? n)
+    (square' (fast-exp base (/ n 2)))
+
+    :else
+    (*' base (fast-exp base (dec n)))))
+
+(fast-exp 2 10)
+(time (fast-exp 2 1000))
+;;=> "Elapsed time: 0.094528 msecs"
+
+;; and we can support much larger exponents without loop-recur too
+(time (fast-exp 2 100000))
+;;=> "Elapsed time: 1.444502 msecs"

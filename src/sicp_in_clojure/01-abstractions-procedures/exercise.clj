@@ -349,3 +349,33 @@
 ;; - space: log3(n)
 ;; - time: log3(n)
 ;; Rationale: 0.1 is constant and in three steps we're roughly at 3: 0.1 * 3 * 3 *3 => 2.7
+
+
+;;; Ex. 1.16 (p. 46))
+;;; Fast exponentiation via iterative algorithm
+
+(defn square' [x] (*' x x))
+
+(defn- fast-exp-iter [a b n]
+  (cond
+    (zero? n)
+    a
+
+    (even? n)
+    (fast-exp-iter a (square' b) (/ n 2))
+
+    :else
+    (fast-exp-iter (* a b) b (dec n))))
+
+(defn fast-exp
+  [base exponent]
+  (fast-exp-iter 1 base exponent))
+
+(fast-exp 3 3)
+(fast-exp 3 6)
+(fast-exp 3 7)
+(fast-exp 4 6)
+(fast-exp 5 5)
+(fast-exp 2 5)
+(fast-exp 2 10)
+
