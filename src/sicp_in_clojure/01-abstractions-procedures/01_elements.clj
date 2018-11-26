@@ -99,18 +99,20 @@
 (fibr 0)
 (fibr 1)
 (fibr 7)
+;; => 13
 ;; Notice it takes a while to compute fibonacci even for relatively small n
 #_(time (fibr 35))
 ;; => "Elapsed time: 2837.268809 msecs"
 
 ;; Compare this to iterative approach
 (defn fibi [n]
-  (letfn [(fib-iter [a b counter]
-            (if (zero? counter)
-              b
-              ;; for larger n-s you'd have to use `+'` here to avoid integer overflow
-              (fib-iter (+' a b) a (dec counter))))]
-    (fib-iter 1 0 n)))
+  (loop [a 1
+         b 0
+         counter n]
+    (if (zero? counter)
+      b
+      ;; for larger n-s you'd have to use `+'` here to avoid integer overflow
+      (recur (+' a b) a (dec counter)))))
 
 (fibi 0)
 (fibi 1)
@@ -118,7 +120,10 @@
 ;; and it's much faster too:
 (time (fibi 35))
 ;; => "Elapsed time: 0.0512 msecs"
-(fibi 100)
+(time (fibi 100))
+;; => "Elapsed time: 0.167737 msecs"
+#_(time (fibi 500000))
+;; => "Elapsed time: 7483.735318 msecs"
 
 
 ;;; 1.2.2 Example: Counting Change (p. 40)

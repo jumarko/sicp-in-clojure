@@ -447,3 +447,38 @@
 #_(time (fast-mult-iter 8 2000))
 ;; and this can run with bigger numbers without StackOverflow
 #_(time (fast-mult-iter 8 2000000))
+
+
+;;; Ex. 1.19 (p. 47) - Fibonacci in logarithmic time
+;;; We can use successive squaring and generic transformation with p' = 1, q' = 1
+;;; where Tpq: a <- bq + qa + qp; b <- bp + aq
+;;; This was really hard for me -> check http://community.schemewiki.org/?sicp-ex-1.19
+(defn fib-log-iter [a b p q count]
+  (cond
+    (zero? count)
+    b
+
+    (even? count)
+    (fib-log-iter a
+                  b
+                  (+' (square' p) (square' q))
+                  (+' (*' 2 p q) (square' q))
+                  (halve count))
+
+    :else
+    (fib-log-iter (+' (*' b q) (*' a q) (*' a p))
+                  (+' (*' b p) (*' a q))
+                  p
+                  q
+                  (dec count))))
+
+(defn fib-log [n]
+  (fib-log-iter 1 0 0 1 n))
+
+(fib-log 0)
+(fib-log 1)
+(fib-log 7)
+;; => 13
+;; following takes ~7 seconds with linear iterative solution (see 01_elements.clj `fibi` function)
+#_(time (fib-log 500000))
+;; => "Elapsed time: 138.664606 msecs"
