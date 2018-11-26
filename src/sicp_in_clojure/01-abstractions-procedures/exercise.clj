@@ -1,6 +1,7 @@
 (ns sicp-in-clojure.01-abstractions-procedures.exercise
   "All 46 exercises from the Chapter 1."
-  (:require [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]))
+  (:require [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]
+            [clojure.string :as str]))
 
 ;;; Ex. 1.2 (p.21)
 (/ (+ 5
@@ -379,3 +380,70 @@
 (fast-exp 2 5)
 (fast-exp 2 10)
 
+
+
+;;; Ex. 1.17 (p. 46)
+;;; Devise a logarithmis multiplication algorithm
+
+;; helper "get-stack" functions to get better overview of space "orders of growth"
+(defn get-stack [fn-name]
+  (->> (Thread/currentThread)
+       .getStackTrace
+       seq
+       (filter #(.contains (.getClassName %)
+                           (clojure.string/replace fn-name "-" "_")))))
+(defn get-stack-depth
+  [fn-name]
+  (-> (get-stack fn-name)
+      count
+      ;; there are always two elements in stack per fn call - invokeStatic and invoke
+      (#(/ % 2))))
+
+;; this is linear
+(defn mult [a b]
+  ;; stack grows linearly
+  #_(println "stack depth: " (get-stack-depth "mult"))
+  (if (zero? b)
+    0
+    (+ a (mult a (dec b)))))
+(mult 3 5)
+;; bigger number which still doesn't throw StackOverflow
+#_(time (mult 8 2000))
+
+
+;; this is logarithmic:
+;; Notice that reported "stack depth" is still increasing
+(defn- halve [a] (/ a 2))
+(defn- double* [a] (* a 2))
+(defn fast-mult [a b]
+  #_(println "" a b)
+  (println "stack depth: " (get-stack-depth "fast-mult"))
+  (cond
+    (zero? b) 0
+    (even? b) (fast-mult (double* a) (halve b))
+    :else (+ a (fast-mult a (dec b)))))
+
+(fast-mult 3 5)
+#_(time (fast-mult 8 2000))
+;; and this can run with bigger numbers without StackOverflow
+#_(time (fast-mult 8 2000000))
+
+
+;;; Ex 1.18 (p.47) - iterative multiplication
+;;; Same as 1.17 but an iterative process
+;;; Notice that reported "stack depth" is always one
+(defn fast-mult-iter [a b]
+  #_(println "called" a b)
+  (loop [acc 0
+         a a
+         b b]
+    (println "stack depth: " (get-stack-depth "fast-mult"))
+    (cond
+      (zero? b) acc
+      (even? b) (recur acc (double* a) (halve b))
+      :else (recur (+ acc a) a (dec b)))))
+
+(fast-mult-iter 3 5)
+#_(time (fast-mult-iter 8 2000))
+;; and this can run with bigger numbers without StackOverflow
+#_(time (fast-mult-iter 8 2000000))
