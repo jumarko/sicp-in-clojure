@@ -1,7 +1,9 @@
 (ns sicp-in-clojure.01-abstractions-procedures.exercise
   "All 46 exercises from the Chapter 1."
-  (:require [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]
-            [clojure.string :as str]))
+  (:require
+   [sicp-in-clojure.core :refer [get-stack get-stack-depth]]
+   [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]
+   [clojure.string :as str]))
 
 ;;; Ex. 1.2 (p.21)
 (/ (+ 5
@@ -384,20 +386,6 @@
 
 ;;; Ex. 1.17 (p. 46)
 ;;; Devise a logarithmis multiplication algorithm
-
-;; helper "get-stack" functions to get better overview of space "orders of growth"
-(defn get-stack [fn-name]
-  (->> (Thread/currentThread)
-       .getStackTrace
-       seq
-       (filter #(.contains (.getClassName %)
-                           (clojure.string/replace fn-name "-" "_")))))
-(defn get-stack-depth
-  [fn-name]
-  (-> (get-stack fn-name)
-      count
-      ;; there are always two elements in stack per fn call - invokeStatic and invoke
-      (#(/ % 2))))
 
 ;; this is linear
 (defn mult [a b]
