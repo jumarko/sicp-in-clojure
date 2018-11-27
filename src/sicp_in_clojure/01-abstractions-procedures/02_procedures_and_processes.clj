@@ -1,5 +1,6 @@
 (ns sicp-in-clojure.01-abstractions-procedures.02-procedures-and-processes
-  (:require [sicp-in-clojure.01-abstractions-procedures.01-elements :as e]))
+  (:require
+   [sicp-in-clojure.core :refer [get-stack get-stack-depth]]))
 
 ;;; 1.2.1 Factorials and recursion
 
@@ -134,3 +135,20 @@
 ;; and we can support much larger exponents without loop-recur too
 (time (fast-exp 2 100000))
 ;;=> "Elapsed time: 1.444502 msecs"
+
+
+
+;;; 1.2.5 Greatest Common Divisor (GCD) - Euclid's algorithm
+;;; Naive approach is to factor numbers and find common factors
+;;; However, Euclid's algorithm is much more efficient
+
+(defn gcd [a b]
+  #_(println "stack depth: " (get-stack-depth "gcd"))
+  (if (zero? b)
+    a
+    (gcd b (rem a b))))
+
+(gcd 206 40)
+(gcd 2793 1113) ;; 5 recursive calls
+;; => 2
+

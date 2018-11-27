@@ -470,3 +470,29 @@
 ;; following takes ~7 seconds with linear iterative solution (see 01_elements.clj `fibi` function)
 #_(time (fib-log 500000))
 ;; => "Elapsed time: 138.664606 msecs"
+
+
+;;; Ex. 1.20 (p.49) Euclid's algorithm: normal-order evaluation vs applicative-order evaluation.
+;;; How many remainders operations are executed in each of this mode of evaluation?
+;;; gdc copied here from 1.2:
+(defn my-rem [a b]
+  (println "rem called")
+  (rem a b))
+(defn gcd [a b]
+  (if (zero? b)
+    a
+    (gcd b (my-rem a b))))
+
+(gcd 206 40)
+(gcd 40 6)
+(gcd 6 4)
+(gcd 4 2)
+(gcd 2 0)
+
+;; applicative-order evaluation:
+(gcd 206 40)
+
+
+;; normal-order evaluation:
+;; can this be simulated with defmacro?
+
