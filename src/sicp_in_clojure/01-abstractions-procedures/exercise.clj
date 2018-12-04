@@ -3,7 +3,12 @@
   (:require
    [sicp-in-clojure.core :refer [get-stack get-stack-depth]]
    [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]
+   [sicp-in-clojure.01-abstractions-procedures.02-elements :as c]
    [clojure.string :as str]))
+
+;;;; Note:
+;;;; Exercises from 1.21 on are in appropriate namespaces for the chapter
+;;;; ====================================================================
 
 ;;; Ex. 1.2 (p.21)
 (/ (+ 5
@@ -495,4 +500,5 @@
 
 ;; normal-order evaluation:
 ;; can this be simulated with defmacro?
+
 

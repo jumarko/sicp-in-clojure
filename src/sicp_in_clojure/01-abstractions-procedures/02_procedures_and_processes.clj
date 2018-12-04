@@ -178,7 +178,10 @@
 (defn smallest-divisor [n]
   (find-divisor n 2))
 
-(defn prime? [n]
+(defn prime?
+  "Performs classic prime test going from 2 up to sqrt(n)
+  to determine whether given number has divisor less than n."
+  [n]
   (= n (smallest-divisor n)))
 
 (prime? 2)
@@ -271,3 +274,75 @@
 ;; => true
 (fast-prime? 81 10)
 ;; => false
+
+;;; Ex. 1.21 (p. 53)
+;;; Use `smallest-divisor` to find the smalelst divisor of each of the following numbers:
+(smallest-divisor 199)
+;; => 199
+(smallest-divisor 1999)
+;; => 1999
+(smallest-divisor 19999)
+;; => 7
+
+
+;;; Ex. 1.22 (p. 54)
+;;; Use `timed-prime-procedure` (provided) to write `search-for-primes` procedure
+;;; to find out three smallest primers larger than 1000; 10,000; 100,000; 1000,000
+;;; Check the running times and compare with expected slow down which is sqrt(10),
+;;; because classic testing algorithm has running time sqrt(n)
+
+(defn report-prime [running-time]
+  (println " *** ")
+  (println running-time "ns"))
+
+(defn start-prime-test [n start-time]
+  (when (prime? n)
+    (report-prime (- (System/nanoTime) start-time))
+    ;; modification of the original implementation from the book
+    ;; => returning n to be able to check if it's a prime
+    n))
+
+(defn timed-prime-test [n]
+  (newline)
+  (println n)
+  (start-prime-test n (System/nanoTime)))
+
+(timed-prime-test 1000)
+
+(defn search-for-primes
+  "Searches for primes at the specified interval;
+  start inclusive, end exclusive.
+  Returns an infinite lazy sequence (chunking!) which you can consume as needed."
+  [start end]
+  (->> (range start end)
+       (map timed-prime-test)
+       ;; return only primes
+       (filter boolean)))
+
+;; Note: make sure to execute it couple of times (10,000+) first to warm-up JIT
+
+(take 3 (search-for-primes 1000 1020))
+;; => (1009 1013 1019)
+;; 12106 ns; 10916 ns; 10004 ns
+
+
+(take 3 (search-for-primes 10000 10040))
+;; => (10007 10009 10037)
+;; 28208 ns; 36036 ns; 27110 ns 
+
+(take 3 (search-for-primes 100000 100050))
+;; => (100003 100019 100043)
+;; 59366 ns; 54495 ns; 53917 ns
+
+(take 3 (search-for-primes 1000000 1000050))
+;; => (1000003 1000033 1000037)
+;;  315656 ns; 154213 ns; 137821  ns
+
+;; just for fun:
+#_(take 3 (search-for-primes 10000000 10000104))
+;; => (10000019 10000079 10000103)
+;; ~800,000 ns
+
+;; Summary
+;; There's 2-3 increase in running time when going from one level to the next one
+;; This roughly corresponds to the sqrt(10) ~= 3.16
