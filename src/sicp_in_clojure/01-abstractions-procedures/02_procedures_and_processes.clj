@@ -152,3 +152,41 @@
 (gcd 2793 1113) ;; 5 recursive calls
 ;; => 2
 
+
+
+;;; 1.2.6 Probabilitistic algos, prime numbers, Fermat's test
+;;;
+
+;; to check whether number is a prime we need to find the smallest divisor.
+;; if that's n than we know it's a prime
+
+(defn find-divisor
+  "Finds the first divisor of number n starting from start-divisor."
+  [n start-divisor]
+  (cond
+    ;; "trick" with square to avoid unnecessary computation
+    (< n (square' start-divisor))
+    n
+
+    (zero? (rem n start-divisor))
+    start-divisor
+
+    :else
+    (find-divisor n (inc start-divisor))))
+
+(defn smallest-divisor [n]
+  (find-divisor n 2))
+
+(defn prime? [n]
+  (= n (smallest-divisor n)))
+
+(prime? 2)
+;; => true
+(prime? 4)
+;; => false
+(prime? 19)
+;; => true
+(prime? 41)
+;; => true
+(prime? 81)
+;; => false
