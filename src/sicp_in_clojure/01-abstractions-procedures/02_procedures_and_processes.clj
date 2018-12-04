@@ -101,7 +101,7 @@
 
 ;;; 1.2.4 Exponentiation
 ;;; Fast exponentiation algorithm using succcessive squaring
-;;; See also exercise.clj for iterative version
+;;; See also exercise.clj for iterative version `fast-exp-iter`
 
 (defn exp [base n]
   (if (zero? n)
@@ -157,6 +157,7 @@
 ;;; 1.2.6 Probabilitistic algos, prime numbers, Fermat's test
 ;;;
 
+;;; Classic prime number test
 ;; to check whether number is a prime we need to find the smallest divisor.
 ;; if that's n than we know it's a prime
 
@@ -189,4 +190,84 @@
 (prime? 41)
 ;; => true
 (prime? 81)
+;; => false
+
+
+;;; Fermat's Test
+;;; Based on the Fermat's Little Theorem stating that for every a < n (if n is a prime)
+;;; holds following: a^n mod n = a mod n
+
+;; we first need expmod procedure to compute module after exponentiation
+;; this is my naive implementation...
+(defn expmod [a n m]
+  (mod (fast-exp a n) m))
+;; and this is from the book:
+(defn expmod [base exp m]
+  (cond
+    (= exp 0)
+    1
+
+    (even? exp)
+    (rem (square' (expmod base (/ exp 2) m))
+         m)
+
+    :else
+    (rem (* base (expmod base (dec exp) m))
+         m)))
+
+(expmod 4 7 7)
+;; => 4
+
+;; my try:
+(defn fermat-prime? [n]
+  (loop [i 0]
+    ;; choose random number in <1, n-1> interval
+    (let [a (inc (rand-int (dec n)))]
+      (cond
+        (not (= (mod a n) (expmod a n n)))
+        false
+
+        (> i 100)
+        true
+
+        :else
+        (recur (inc i))))))
+
+(fermat-prime? 2)
+;; => true
+(fermat-prime? 3)
+;; => true
+(fermat-prime? 4)
+;; => false
+(fermat-prime? 15)
+;; => false
+(fermat-prime? 19)
+;; => true
+(fermat-prime? 81)
+;; => false
+
+;; from the book
+(defn fermat-test [n]
+  (letfn [(try-it [a] (= a (expmod a n n)))]
+    (try-it (inc (rand-int (dec n))))))
+
+(defn fast-prime? [n times]
+  (cond
+    (zero? times) true
+
+    (fermat-test n) (fast-prime? n (dec times))
+
+    :else false))
+
+(fast-prime? 2 10) 
+;; => true
+(fast-prime? 3 10)
+;; => true
+(fast-prime? 4 10)
+;; => false
+(fast-prime? 15 10)
+;; => false
+(fast-prime? 19 10)
+;; => true
+(fast-prime? 81 10)
 ;; => false
