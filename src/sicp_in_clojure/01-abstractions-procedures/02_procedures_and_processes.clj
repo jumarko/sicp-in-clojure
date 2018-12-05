@@ -163,17 +163,17 @@
 
 (defn find-divisor
   "Finds the first divisor of number n starting from start-divisor."
-  [n start-divisor]
+  [n test-divisor]
   (cond
     ;; "trick" with square to avoid unnecessary computation
-    (< n (square' start-divisor))
+    (< n (square' test-divisor))
     n
 
-    (zero? (rem n start-divisor))
-    start-divisor
+    (zero? (rem n test-divisor))
+    test-divisor
 
     :else
-    (find-divisor n (inc start-divisor))))
+    (find-divisor n (inc test-divisor))))
 
 (defn smallest-divisor [n]
   (find-divisor n 2))
@@ -202,8 +202,13 @@
 
 ;; we first need expmod procedure to compute module after exponentiation
 ;; this is my naive implementation...
+;; This is in fact the question in the Ex. 1.25 (p. 55)
 (defn expmod [a n m]
   (mod (fast-exp a n) m))
+;; now we see that my naive implementation is really bad
+;; following doesn't finish in any reasonable time (not within 1 minute!)
+#_(time (expmod 123456 123456789 123456789))
+
 ;; and this is from the book:
 (defn expmod [base exp m]
   (cond
@@ -217,6 +222,9 @@
     :else
     (rem (* base (expmod base (dec exp) m))
          m)))
+;; but the one from the book is really fast:
+#_(time (expmod 123456 123456789 123456789))
+;; "Elapsed time: 0.204019 msecs"
 
 (expmod 4 7 7)
 ;; => 4
@@ -307,7 +315,7 @@
   (println n)
   (start-prime-test n (System/nanoTime)))
 
-(timed-prime-test 1000)
+#_(timed-prime-test 1000)
 
 (defn search-for-primes
   "Searches for primes at the specified interval;
@@ -321,20 +329,20 @@
 
 ;; Note: make sure to execute it couple of times (10,000+) first to warm-up JIT
 
-(take 3 (search-for-primes 1000 1020))
+#_(take 3 (search-for-primes 1000 1020))
 ;; => (1009 1013 1019)
 ;; 12106 ns; 10916 ns; 10004 ns
 
 
-(take 3 (search-for-primes 10000 10040))
+#_(take 3 (search-for-primes 10000 10040))
 ;; => (10007 10009 10037)
 ;; 28208 ns; 36036 ns; 27110 ns 
 
-(take 3 (search-for-primes 100000 100050))
+#_(take 3 (search-for-primes 100000 100050))
 ;; => (100003 100019 100043)
 ;; 59366 ns; 54495 ns; 53917 ns
 
-(take 3 (search-for-primes 1000000 1000050))
+#_(take 3 (search-for-primes 1000000 1000050))
 ;; => (1000003 1000033 1000037)
 ;;  315656 ns; 154213 ns; 137821  ns
 
@@ -346,3 +354,204 @@
 ;; Summary
 ;; There's 2-3 increase in running time when going from one level to the next one
 ;; This roughly corresponds to the sqrt(10) ~= 3.16
+
+
+;;; Ex. 1.23 (p. 54)
+;;; `smallest-divisor` does lots of needles testing:
+;;;   it's not necessary to check every even number once you checked the 2.
+;;; => Define a procedure `next` which will return the next divisor (3 if the current is 2 and +2 otherwise)
+;;; Then time this modified version of `smallest-divisor` using the same samples as in 1.22
+;;; Is it two times faster? If not why?
+
+;; we need to redefine `find-divisor` since that's what the `smallest-divisor` is using
+(defn next-test-divisor [test-divisor]
+  (if (= 2 test-divisor)
+    3
+    (+ 2 test-divisor)))
+
+(defn find-divisor
+  "Finds the first divisor of the number n starting from start-divisor."
+  [n test-divisor]
+  (cond
+    (< n (square' test-divisor))
+    n
+
+    (zero? (rem n test-divisor))
+    test-divisor
+
+    :else
+    (find-divisor n (next-test-divisor test-divisor))))
+
+#_(take 3 #_(search-for-primes 1000 1020))
+;; => (1009 1013 1019)
+;; Very inconsistent results, but now I'm more often getting times between 5,000 and 8,000 ns
+;; Original results:
+;;  12106 ns; 10916 ns; 10004 ns
+
+
+#_(take 3 (search-for-primes 10000 10040))
+;; => (10007 10009 10037)
+;; Very inconsistent results, but now I'm more often getting times between 12,000 and 20,000 ns
+;; Original results:
+;;   28208 ns; 36036 ns; 27110 ns 
+
+
+#_(take 3 (search-for-primes 100000 100050))
+;; => (100003 100019 100043)
+;; Very inconsistent results, but now I'm more often getting times between 35,000 and 40,000 ns
+;; Original results:
+;;   59366 ns; 54495 ns; 53917 ns
+
+#_(take 3 (search-for-primes 1000000 1000050))
+;; => (1000003 1000033 1000037)
+;; Very inconsistent results, but now I'm more often getting times around 100,000 ns
+;; Original results:
+;;  315656 ns; 154213 ns; 137821  ns
+
+;;=> In general, I'm seeing some improvement and that's around 0.5 - 0.7 of original time
+;;   To get more precise results I should have run it with something like criterium to see
+;;    the real numbers (see below)
+;;  The less than 2x improvement may be due the slower iteration (next-test-divisor vs inc call)
+;;  and also some memory caching effects.
+
+;; See http://community.schemewiki.org/?sicp-ex-1.23 :
+;;   The observed ratio of the speed of the two algorithms is not 2, but roughly 1.5 (or 3:2) ***
+;;   This is mainly due to the NEXT procedure's IF test. The input did halve indeed, but we need to do an extra IF test ***
+
+(comment
+  (require '[criterium.core :as c])
+  (c/quick-bench (take 3 (search-for-primes 1000000 1000050)))
+  ;; The improved implementation:
+  ;; Evaluation count : 7406334 in 6 samples of 1234389 calls.
+  ;; Execution time mean : 80.346378 ns ***
+  ;; Execution time std-deviation : 12.241609 ns
+  ;; Execution time lower quantile : 70.109303 ns ( 2.5%)
+  ;; Execution time upper quantile : 99.796739 ns (97.5%) ***
+  ;; Overhead used : 10.241829 ns
+
+  ;; The old implementation:
+  ;; Evaluation count : 4363632 in 6 samples of 727272 calls.
+  ;; Execution time mean : 103.447246 ns ***
+  ;; Execution time std-deviation : 33.591116 ns
+  ;; Execution time lower quantile : 73.880126 ns ( 2.5%)
+  ;; Execution time upper quantile : 151.937924 ns (97.5%)
+  ;; Overhead used : 10.241829 ns
+
+  )
+
+
+;;; Ex. 1.24 (p. 55)
+;;; Modify the `timed-prime-test` procedure to use `fast-prime?` instead
+;;; and test each of the 12 primes you've found in the ex. 1.22.
+;;; Since it has O(log n) growth, how would you expect the running time to increase
+;;; when going from testing primes near 1,000 to testing primes near 1,000,000?
+;;; => Theoretically we should expect running time to be only doubled: log 1000 = 3; log 1000000 = 6
+
+(defn start-prime-test [n start-time]
+  (when (fast-prime? n 10)
+    (report-prime (- (System/nanoTime) start-time))
+    ;; modification of the original implementation from the book
+    ;; => returning n to be able to check if it's a prime
+    n))
+
+#_(timed-prime-test 1009)
+;; 74170 ns
+#_(timed-prime-test 1013)
+;; 75194 ns
+#_(timed-prime-test 1019)
+;; 67691 ns
+
+#_(timed-prime-test 10007)
+;; 143297 ns
+#_(timed-prime-test 10009)
+;; 79403 ns
+#_(timed-prime-test 10037)
+;; 117173 ns
+
+#_(timed-prime-test 100003)
+;; 104602 ns
+#_(timed-prime-test 100019)
+;; 85833 ns
+#_(timed-prime-test 100043)
+;; 141564 ns
+
+#_(timed-prime-test 1000003)
+;; 92083 ns
+#_(timed-prime-test 1000033)
+;; 157861 ns
+#_(timed-prime-test 1000037)
+;; 110192 ns
+
+;; => although results vary a lot we still see almost the expected improvement
+;;    certainly not more than 2x increase
+;; Note:  performing primitive operations on sufficiently large numbers is not constant time, but grows with the size of the number.
+
+
+;;; Ex. 1.25 (p. 55) is naive `expmod` the same as the implementation from the book?
+;;; => The remainder operation inside the original expmod implementation, keeps the numbers
+;;;    being squared less than the number tested for primality m. fast-expt however squares huge numbers of a^m size.
+(defn expmod [base exp m]
+  (rem (fast-exp base exp) m))
+;; now we see that my naive implementation is really bad
+;; following doesn't finish in any reasonable time (not within 1 minute!)
+#_(time (expmod 123456 123456789 123456789))
+
+(defn expmod [base exp m]
+  (cond
+    (= exp 0)
+    1
+
+    (even? exp)
+    (rem (square' (expmod base (/ exp 2) m))
+         m)
+
+    :else
+    (rem (* base (expmod base (dec exp) m))
+         m)))
+;; but the one from the book is really fast:
+#_(time (expmod 123456 123456789 123456789))
+;; "Elapsed time: 0.204019 msecs"
+
+
+;;; Ex. 1.26 (p. 55)
+;;; Explain why writing expmod procedure like this make it O(n) instead of (O log n)
+(defn expmod [base exp m]
+  (cond
+    (= exp 0)
+    1
+
+    (even? exp)
+    (rem (* (expmod base (/ exp 2) m)
+            (expmod base (/ exp 2) m))
+         m)
+
+    :else
+    (rem (* base (expmod base (dec exp) m))
+         m)))
+;; suddenly, `fast-prime?` is slower than `prime?`
+#_(time (prime? 123456789))
+;; "Elapsed time: 0.508992 msecs"
+#_(time (fast-prime? 123456789 10))
+;; ... didn't finish in reasonable time ...
+
+;; => This slow-down is because we turned ordinary recursion into a tree recursion
+;;    which means that we halve number of operations via `(/ exp 2)` but immediatelly
+;;    double number of operations by repeating the same computation twice
+
+;; now rewrite it again and see the improvements
+(defn expmod [base exp m]
+  (cond
+    (= exp 0)
+    1
+
+    (even? exp)
+    (rem (square' (expmod base (/ exp 2) m))
+         m)
+
+    :else
+    (rem (* base (expmod base (dec exp) m))
+         m)))
+
+#_(time (fast-prime? 123456789 10))
+;; "Elapsed time: 0.074926 msecs"
+ 
