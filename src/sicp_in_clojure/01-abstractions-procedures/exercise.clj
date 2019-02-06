@@ -3,7 +3,6 @@
   (:require
    [sicp-in-clojure.core :refer [get-stack get-stack-depth]]
    [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]
-   [sicp-in-clojure.01-abstractions-procedures.02-elements :as c]
    [clojure.string :as str]))
 
 ;;;; Note:

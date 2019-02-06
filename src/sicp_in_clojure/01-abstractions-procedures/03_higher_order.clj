@@ -1,8 +1,9 @@
 (ns sicp-in-clojure.01-abstractions-procedures.03-higher-order
   "Higher order procedures.
   Video Lecture 2A: https://www.youtube.com/watch?v=erHp3r6PbJk&list=PLE18841CABEA24090&index=3"
-  (:require [sicp-in-clojure.01-abstractions-procedures.core :as c]
-            [sicp-in-clojure.01-abstractions-procedures.exercise :as e]))
+  (:require
+   [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]
+   [sicp-in-clojure.01-abstractions-procedures.exercise :as e]))
 
 ;;; Similar patterns to refactor...
 (defn sum-ints
