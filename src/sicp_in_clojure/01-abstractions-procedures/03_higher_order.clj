@@ -25,6 +25,21 @@
 (sum-sq 2 5)
 ;; => 54
 
+(defn pi-sum
+  "Computers a sequence `pi/8 = 1/1*3 1/5*7 + 1/9*11 + ...`.
+  This is an interesting sequence originally discovered by Leibnitz
+  and usually written as `pi/4 = 1 - 1/3 + 1/5 - 1/7 + 1/9 ...`."
+  [a b]
+  (if (> a b)
+    0
+    (+
+     (/ 1 (* a (+ a 2)))
+     (pi-sum (+ a 4) b))))
+
+;; coerce to double to get more familiar result
+(double (* 8 (pi-sum 1 1000)))
+;; => 3.139592655589783
+
 
 (defn sum
   "General summing procedure.
@@ -42,10 +57,20 @@
   (sum identity a inc b))
 (sum-ints 1 10)
 ;; => 55
+
 (defn sum-sq [a b]
   (sum c/square a inc b))
 (sum-sq 2 5)
 ;; => 54
+
+(defn pi-sum [a b]
+  (sum #(/ 1 (* % (+ % 2)))
+       1
+       #(+ % 4)
+       1000))
+(double (* 8 (pi-sum 1 1000)))
+;; => 3.139592655589783
+
 
 
 ;;; Let's define sqrt in terms of general fixed-point function
