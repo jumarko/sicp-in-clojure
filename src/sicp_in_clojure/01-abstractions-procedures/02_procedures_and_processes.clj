@@ -555,3 +555,90 @@
 #_(time (fast-prime? 123456789 10))
 ;; "Elapsed time: 0.074926 msecs"
  
+
+;; Ex. 1.27 (p. 55) Carmichael numbers
+(def c-numbers [561 1105 1729 2465 2821 6601])
+
+(defn congruent? [a n]
+  (= (expmod a n n)
+     a))
+
+(defn carmichael-test [n]
+  (every? #(congruent? % n) (range n)))
+
+(mapv carmichael-test [63 561 2709])
+;; => [false true false]
+(mapv carmichael-test c-numbers)
+;; => [true true true true true true]
+
+
+
+;; Ex. 1.28 (p. 56) Miller-Rabin test
+;; Modify original expmod to check for non-trivial square root
+;; and return early
+(defn- non-trivial-sqrt? [x n modulus]
+  (and (= 1 modulus)
+       (not= 1 x)
+       (not= (dec n) x)))
+
+(defn mr-expmod
+  "Like `expmode` but in every 'squaring' step checks whether we've found
+  a 'non-trivial square root of 1 mod n` and returns 0 in that case to indicate
+  that it can't be a prime number then.
+  Useful for `miller-rabin-test`."
+  [base exp m]
+  (cond
+    (= exp 0)
+    1
+
+    (even? exp)
+    (let [res (mr-expmod base (/ exp 2) m)
+          sq (square' res)
+          modulus (rem sq m)]
+      (if (non-trivial-sqrt? res m modulus)
+        ;; non-trivial square root!
+        0
+        modulus))
+
+    :else
+    (rem (* base (mr-expmod base (dec exp) m))
+         m)))
+
+(defn miller-rabin-test [n]
+  ;; Originally, didn't change params passed to expmod just modified the expmod itself
+  ;; BUT it seemed to work => is 
+  ;; `(= 1 (mr-expmod a (dec n) n)))`
+  ;; AND `(= 0 (mr-expmod a n n)))`
+  ;; EQUIVALENT??
+  (letfn [(try-it [a] (= 1 (mr-expmod a (dec n) n)))]
+    (try-it (inc (rand-int (dec n))))))
+
+
+(defn miller-rabin-prime? [n times]
+  (cond
+    (zero? times) true
+
+    (miller-rabin-test n) (miller-rabin-prime? n (dec times))
+
+    :else false))
+
+(mapv #(fast-prime? % 100) c-numbers)
+;; => [true true true true true true]
+(mapv #(miller-rabin-prime? % 100) c-numbers)
+;; => [false false false false false false]
+(miller-rabin-prime? 2 100) 
+;; => true
+(miller-rabin-prime? 3 100) 
+;; => true
+(miller-rabin-prime? 9 100) 
+;; => false
+(miller-rabin-prime? 19 100) 
+;; => true
+(miller-rabin-prime? 81 100) 
+;; => false
+(miller-rabin-prime? 1019 100) 
+;; => true
+
+
+
+
