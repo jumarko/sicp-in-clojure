@@ -26,7 +26,7 @@
 ;; => 54
 
 (defn pi-sum
-  "Computers a sequence `pi/8 = 1/1*3 1/5*7 + 1/9*11 + ...`.
+  "Computers a sequence `pi/8 = 1/1*3 + 1/5*7 + 1/9*11 + ...`.
   This is an interesting sequence originally discovered by Leibnitz
   and usually written as `pi/4 = 1 - 1/3 + 1/5 - 1/7 + 1/9 ...`."
   [a b]
@@ -141,6 +141,42 @@
 ;; => 0.249999875000001
 ;; (integral e/cube 0 1 0.0001) => throws StackOverflow
 
+
+;; Ex. 1.29: simpson's integral
+;; The hard thing about this exercise are alternating factors (4 and 2)
+;; which don't play nicely with the `term` and `next` functions used in the helper `sum` procedure.
+;; The realization you need to make is that you can actually derive the proper coefficient (1, 4, or 2)
+;; without complicating `next` function (which will be just `inc`):
+(defn- coefficient [k n]
+  (cond
+    (or (= k 0) (= k n))
+    1
+
+    (odd? k)
+    4
+
+    (even? k)
+    2))
+(defn simpson-integral
+  "Computes a definite integral of `f` between the limits `a` and `b` using
+  the Simpson's rule.
+  `n` determines number of iterations - the grater, the more accurate the result is."
+  [f a b n]
+  (let [h (/ (- b a) n)
+        f-k (fn [k] (*
+                     (coefficient k n)
+                     (f (+ a (* k h)))))]
+    (* (/ h 3)
+       (sum f-k 0 inc n))))
+
+(double (simpson-integral e/cube 0 1 5))
+;; => 0.2032
+(double (simpson-integral e/cube 0 1 20))
+;; => 0.25
+(double (simpson-integral e/cube 0 1 100))
+;; => 0.25
+(double (simpson-integral e/cube 0 1 1000))
+;; => 0.25
 
 
 
