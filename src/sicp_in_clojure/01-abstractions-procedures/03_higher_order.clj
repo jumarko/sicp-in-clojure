@@ -118,3 +118,30 @@
                   (f x))
                dx))))
 (sqrt 4)
+
+
+;;; Definite integral - (p. 59-60)
+
+;; naive approach (p.59)
+(defn integral
+  "Approximates the value of definite integral of `f` between the limits `a` and `b`.
+  Note: this implementation doesn't optimize tail-recursion so the dx shouldn't be smaller
+  1/1000 of (b - a) )."
+  [f a b dx]
+  (let [add-dx #(+ % dx)]
+    (* (sum f
+            (+ a (/ dx 2))
+            add-dx
+            b)
+       dx)))
+
+(integral e/cube 0 1 0.01)
+;; => 0.24998750000000042
+(integral e/cube 0 1 0.001)
+;; => 0.249999875000001
+;; (integral e/cube 0 1 0.0001) => throws StackOverflow
+
+
+
+
+
