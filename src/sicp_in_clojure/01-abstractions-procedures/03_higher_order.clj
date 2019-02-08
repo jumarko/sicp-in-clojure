@@ -211,3 +211,43 @@
 ;; => 50005000
 
 
+;;; 1.31 product function
+;;; Show how to define factorial via `product`
+;;; Also computers pi approximation via John Wallis' formula pi/4 = 2 * 4 * 4 * 6 * 6 * 8 ... / (3 * 3 * 5 * 5 * 7 * 7)
+(defn product-recursive [term a next b]
+  (if (> a b)
+    0
+    (* (term a)
+       (product-recursive term (next a) next b))))
+(defn product-iterative [term a next b]
+  (let [iter (fn iter [a result]
+               (if (> a b)
+                 result
+                 (recur (next a)
+                        (* result (term a)))))]
+    (iter a 1)))
+(def product product-iterative)
+(defn ints-product [a b]
+  (product identity a inc b))
+(def factorial (partial ints-product 1))
+(factorial 5)
+;; => 120
+
+(defn pi-wallis
+  "Computes approximation of pi using John Wallis' formula:
+  `pi/4 = (2 * 4 * 4 * 6 * 6 * 8 * ...) / (3 * 3 * 5 * 5 * 7 * 7 * ...)`"
+  [n]
+  ;; we need to realize that it's just about simple transformation in the `term` function
+  ;; taking into account which element we're dealing with
+  (let [term (fn term [a]
+               (if (odd? a)
+                 (/ (+ a 1) (+ a 2))
+                 (/ (+ a 2) (+ a 1))))]
+    (* 4
+       (product term 1 inc n))))
+(double (pi-wallis 10))
+;; => 3.275101041334808
+(double (pi-wallis 100))
+;; => 3.157030176455168
+
+
