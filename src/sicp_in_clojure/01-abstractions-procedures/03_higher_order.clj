@@ -233,21 +233,59 @@
 (factorial 5)
 ;; => 120
 
+(defn- pi-term [a]
+  (if (odd? a)
+    (/ (+ a 1) (+ a 2))
+    (/ (+ a 2) (+ a 1))))
 (defn pi-wallis
   "Computes approximation of pi using John Wallis' formula:
   `pi/4 = (2 * 4 * 4 * 6 * 6 * 8 * ...) / (3 * 3 * 5 * 5 * 7 * 7 * ...)`"
   [n]
   ;; we need to realize that it's just about simple transformation in the `term` function
   ;; taking into account which element we're dealing with
-  (let [term (fn term [a]
-               (if (odd? a)
-                 (/ (+ a 1) (+ a 2))
-                 (/ (+ a 2) (+ a 1))))]
-    (* 4
-       (product term 1 inc n))))
+  (* 4
+     (product pi-term 1 inc n)))
 (double (pi-wallis 10))
 ;; => 3.275101041334808
 (double (pi-wallis 100))
 ;; => 3.157030176455168
 
+
+;;; Ex. 1.32 (p. 61)
+;;; Observe that sum and product are just special cases of more general accumulate function:
+(defn accumulate-recursive
+  [combiner null-value term a next b]
+  (if (> a b)
+    null-value
+    (combiner (term a)
+              (accumulate-recursive combiner null-value term (next a) next b))))
+
+(defn accumulate-iter
+  "Accumulator which uses `combiner` (such as + or *) and null value (0 for sum, 1 for product, ...)
+  to compute 'accumulation' of all values between a and b (inclusive)
+  by calling `term` on each item of a sequence and using `next` to compute next item in the sequence.
+  The most primitive example is sum of integers from 1 to 10:
+    `(accumulate + 0 identity 1 inc 10)`"
+  [combiner null-value term a next b]
+  (let [iter (fn iter [a result]
+               (if (> a b)
+                 result
+                 (recur (next a)
+                        (combiner result (term a)))))]
+    (iter a null-value)))
+
+(def accumulate accumulate-iter)
+
+;; sum-ints:
+(accumulate + 0 identity 1 inc 10)
+;; => 55
+(accumulate + 0 identity 1 inc 10000)
+;; => 50005000
+;; factorial:
+(accumulate * 1 identity 1 inc 5)
+;; => 120
+;; Wallis' pi approximation
+;; notice that with large n like 10,000 it takes VERY LONG TIME!
+(double (* 4 (accumulate * 1 pi-term 1 inc 100)))
+;; => 3.157030176455168
 
