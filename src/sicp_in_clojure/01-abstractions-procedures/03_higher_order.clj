@@ -3,6 +3,7 @@
   Video Lecture 2A: https://www.youtube.com/watch?v=erHp3r6PbJk&list=PLE18841CABEA24090&index=3"
   (:require
    [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]
+   [sicp-in-clojure.01-abstractions-procedures.02-procedures-and-processes :as c2]
    [sicp-in-clojure.01-abstractions-procedures.exercise :as e]))
 
 ;;; Similar patterns to refactor...
@@ -288,4 +289,37 @@
 ;; notice that with large n like 10,000 it takes VERY LONG TIME!
 (double (* 4 (accumulate * 1 pi-term 1 inc 100)))
 ;; => 3.157030176455168
+
+
+;;; Ex. 1.33 (p.61) - filtered-accumulate
+
+(defn filtered-accumulate [combiner null-value term a next b filter-fn]
+  (let [iter (fn iter [a result]
+               (if (> a b)
+                 result
+                 (let [next-result (if (filter-fn a)
+                                     (combiner result (term a))
+                                     result)]
+                   (recur (next a) next-result))))]
+    (iter a null-value)))
+
+(defn sum-primes-squares [a b]
+  (filtered-accumulate + 0 c2/square' a inc b c2/prime?))
+(sum-primes-squares 2 5)
+;; => 38
+
+(defn relative-primes-product
+  "Computes product of all positive integers less than n that are relatively prime to n;
+  that is for all i < n: GCD(i, n) = 1."
+  [n]
+  (let [relative-prime? (fn [i]
+                          (= 1 (c2/gcd i n)))]
+    (filtered-accumulate * 1 identity 1 inc (dec n)
+                         relative-prime?)))
+;; 3 * 7 * 9
+;; apart from obvious even numbers, the 5 also divides 10
+(relative-primes-product 10)
+;; => 189
+
+
 
