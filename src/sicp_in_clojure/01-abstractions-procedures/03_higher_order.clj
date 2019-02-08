@@ -179,5 +179,35 @@
 ;; => 0.25
 
 
+;;; 1.30 Iterative version of `sum`
+;; let's start by creating skeletons:
+(defn sum-iter [acc term a next b]
+  acc)
+(defn sum [term a next b]
+  (sum-iter 0 term a next b))
+;; then we need to improve `sum-iter`
+(defn sum-iter [acc term a next b]
+  (if (> a b)
+    acc
+    ;; it' simple just add to accumulator
+    (recur (+ acc (term a))
+           term
+           (next a)
+           next
+           b)))
+;; now we can compute large sums
+;; this would fail on StackOverflow before...
+(sum-ints 1 10000)
+;; => 50005000
+;; Alternatively we can follow the book recommandation and save some arguments
+(defn sum2 [term a next b]
+  (let [iter (fn iter [a result]
+               (if (> a b)
+                 result
+                 (recur (next a)
+                        (+ result (term a)))))]
+    (iter a 0)))
+(sum2 identity 1 inc 10000)
+;; => 50005000
 
 
