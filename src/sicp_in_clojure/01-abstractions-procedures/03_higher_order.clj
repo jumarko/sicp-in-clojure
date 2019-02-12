@@ -381,3 +381,51 @@
 ;;what happens now?
 #_(f f)
 ;;=>    java.lang.Long cannot be cast to clojure.lang.IFn
+
+
+;;; Half-interval method (p. 67)
+(defn close-enough? [x y]
+  (< (Math/abs (- x y))
+     0.001))
+
+(defn half-interval-search
+  "Half-interval method starts with given interval (a,b) such that
+  f(a) < 0 < f(b)
+  and continues halving the interval using x = avg(a, b)
+  until it finds an x where f(x) = 0 (or is close enough)."
+  [f neg-point pos-point]
+  (let [avg (c/avg neg-point pos-point)
+        avg-val (f avg)]
+    (if (close-enough? neg-point pos-point)
+      avg
+      (cond
+        (neg? avg-val) (half-interval-search f avg pos-point)
+        (pos? avg-val) (half-interval-search f neg-point avg)
+        :else avg))))
+
+;; but search is awkward to use directly because it may be hard to see for which value the function
+;; returns negative value and for which the positive one:
+(defn half-interval-method [f a b]
+  (let [fa (f a)
+        fb (f b)]
+    (cond
+      (and (neg? fa) (pos? fb))
+      (half-interval-search f a b)
+
+      (and (neg? fb) (pos? fa))
+      (half-interval-search f b a)
+
+      :else
+      (throw (ex-info "Valures are not of opposite sign" {:a a :b b})))))
+
+(half-interval-method e/sine 2.0 4.0)
+;; => 3.14111328125
+
+(half-interval-method
+ (fn [x] (- (* x x x)
+            (* 2 x)
+            3))
+ 1.0
+ 2.0)
+;; => 1.89306640625
+
