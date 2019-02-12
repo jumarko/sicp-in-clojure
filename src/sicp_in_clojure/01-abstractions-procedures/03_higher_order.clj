@@ -322,4 +322,62 @@
 ;; => 189
 
 
+;;; 1.3.2 Lambdas & let
 
+;; let is just a syntactic sugar for lambda parameters (in Scheme)
+;; consider this function
+(defn f [x y]
+  (+ (* x
+        (+ 1 (c/square (* x y))))
+     (* y (- 1 y))
+     (* (+ 1 (* x y))
+        (- 1 y))))
+(f 2 3)
+;; => 78
+
+;; we'd like to simplify and reuse by using:
+;; a = 1 + xy
+;; b = 1 - y
+;; => f(x, y) = xa^2 + yb + ab
+(defn f-lambda [x y]
+  ((fn [a b]
+     (+ (* x (c/square a))
+        (* y b)
+        (* a b)))
+   (+ 1 (* x y))
+   (- 1 y)))
+(f-lambda 2 3)
+;; => 78
+
+;; with let it's easier
+(defn f-let [x y]
+  (let [a (+ 1 (* x y))
+        b (- 1 y)]
+    (+ (* x (c/square a))
+       (* y b)
+       (* a b))))
+(f-let 2 3)
+;; => 78
+
+;; BUT notice that in Clojure let doesn't behave as in Scheme
+;; in Scheme this would return 12!
+(let [x 5]
+  (let [x 3
+        y (+ x 2)]
+    (* x y)))
+;; => 15
+;; (let ((x 2))
+;;   (let ((x 3)
+;;         (y (+ x 2)))
+;;     (* x y)))
+;; => ;Value: 12
+
+
+;;; Ex. 1.34 (p. 66)
+(defn f [g]
+  (g 2))
+(f c/square)
+;; => 4
+;;what happens now?
+#_(f f)
+;;=>    java.lang.Long cannot be cast to clojure.lang.IFn
