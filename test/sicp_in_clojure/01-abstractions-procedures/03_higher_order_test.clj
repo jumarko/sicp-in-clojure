@@ -15,3 +15,15 @@
                                      1.0
                                      2.0)))))
 
+(deftest fixed-point
+  (testing "cosine fixed point approximation"
+    (is (= 0.7390822985224024
+           (sut/fixed-point #(Math/cos %) 1.0)))
+    )
+  (testing "sin(x) + cos(x) approximation"
+    (is (= 1.2587315962971173
+           (sut/fixed-point #(+  (Math/sin %) (Math/cos %)) 1.0))))
+  (testing "square root approximation"
+    (is (= 2.000000000000002
+           (sut/sqrt 4)))))
+  

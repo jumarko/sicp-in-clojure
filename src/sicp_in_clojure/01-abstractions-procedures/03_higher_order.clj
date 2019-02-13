@@ -429,3 +429,45 @@
  2.0)
 ;; => 1.89306640625
 
+
+;;; Fixed points (p.68)
+;;; Fixed point of a function is a number x: f(x) = x
+;;; For some functions we can find it by taking initial guess and repeatedly applying the function
+;;; until the difference is smaller than some predefined tolerance
+
+(def tolerance 0.00001)
+
+(defn close-enough? [v1 v2 tolerance]
+  (< (c/abs (- v1 v2))
+     tolerance))
+
+(defn fixed-point [f first-guess]
+  (let [next-guess (f first-guess)]
+    (if (close-enough? first-guess next-guess tolerance)
+      next-guess
+      (recur f next-guess))))
+
+(fixed-point #(Math/cos %) 1.0)
+;; => 0.7390822985224024
+
+(fixed-point #(+  (Math/sin %) (Math/cos %)) 1.0)
+;; => 1.2587315962971173
+
+;; let's try to use fixed-point to find a square root of a function
+;; => DOESN'T CONVERGE! (guesses oscilate between x and 1.0)
+(defn sqrt [x]
+  (fixed-point (fn [y] (/ x y))
+               1.0))
+#_(sqrt 4)
+;; => infinite loop
+
+;; Let's try a better one by using "average damping" technique
+;; Note that we use simple transformation of the original function y = x/y:
+;;   y + y = y + x/y => y + y / 2 = (y + x/y) / 2 => y = 1/2 * (y + x/y)
+(defn sqrt [x]
+  (fixed-point (fn [y] (* 1/2 (+ y (/ x y))))
+               1.0))
+(sqrt 4)
+;; => 2.000000000000002
+
+
