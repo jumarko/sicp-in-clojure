@@ -27,3 +27,11 @@
     (is (= 2.000000000000002
            (sut/sqrt 4)))))
   
+(deftest golden-ratio
+  (testing "Golden ratio returns correct value"
+    (is (= 1.6180
+           (->> (sut/golden-ratio)
+                double
+                (format "%.4f")
+                (Double/parseDouble))))))
+           

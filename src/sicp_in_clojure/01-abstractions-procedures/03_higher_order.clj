@@ -471,3 +471,89 @@
 ;; => 2.000000000000002
 
 
+;;; Exc. 1.35 Show that the golden ratio (section 1.2.2 on p. 38)
+;;; is a fixed point of the transformation:  x -> 1 + 1/x
+;;; Use this fact to compute golden ratio by means of the fixed point
+
+;; The transformation x -> 1 + 1/x
+;; derives directly from the definition x^2 = x + 1 (just divide both sides by x)
+
+;; Manually, I can compute a few values
+;; 1 + 1/2 = 3/5
+;; 1 + 2/3 = 5/3
+;; 1 + 3/5 = 8/5
+;; 1 + 5/8 = 13/8
+;; 1 + 8/13 = 21/13
+(map double [5/3 8/5 13/8 21/13])
+;; => (1.666666666666667 1.6 1.625 1.615384615384615)
+
+(defn golden-ratio []
+  (fixed-point
+   (fn [x] (+ 1 (/ 1 x)))
+   1))
+
+(double (golden-ratio))
+;; => 1.618032786885246
+
+
+;;; Ex. 1.36 (p.70)
+;;; Add debug print statements to fixed-point function
+;;; and use it to compute x^x = 1000
+;;; Note that x^x is equivalent with transformation x -> ln 1000 / ln x
+;;; You also cannot start fixed-point iteration with 1.0 because ln(1.0) = 0
+
+(defn fixed-point-trace [f first-guess]
+  (let [next-guess (f first-guess)]
+    (if (close-enough? first-guess next-guess tolerance)
+      next-guess
+      (do
+        (println "Next guess: " next-guess)
+        (recur f next-guess)))))
+
+#_(fixed-point-trace
+ (fn [x] (/ (Math/log 1000)
+            (Math/log x)))
+ 2.0)
+;; => 4.555532270803653
+
+(Math/pow 4.555532270803653 4.555532270803653)
+;; => 999.9913579312362
+
+
+;;; Ex. 1.37 (p.71)
+;;; Infinite continued fraction.
+;;; 1/golden_ratio can be computed as continued fraction expansion
+;;; where N = 1,1,1, .... and also D = 1,1,1,1, ....
+;;; Define cont-frac procedure  that approximates continued fraction by limiting expansions to number k.
+(defn- cont-frac-rec
+  [n d k i]
+  (if (> i k)
+    (/ (n k) (d k))
+    (/ (n i)
+       (+ (d i) (cont-frac-rec n d k (inc i))))))
+
+(defn cont-frac
+  "Computes finite continued fraction using `n` to produce elements of set N,
+  `d` to produce elements of set D, and k as a limit of max number of expansions"
+  [n d k]
+  (cont-frac-rec n d k 1))
+
+;; Check what's the value of 1/golden-ratio:
+(double (/ 1 (golden-ratio)))
+;; => 0.6180344478216819
+
+;; now compute it via `cont-frac` function
+(double (cont-frac (constantly 1)
+                   (constantly 1)
+                   15))
+;; => 0.6180338134001252
+
+;; Write also an iterative alternative of my `cont-frac`
+(defn- cont-frac-iter [n d k i]
+  ;; TODO
+  )
+(defn cont-frac [n d k]
+  (cont-frac-iter n d k 1))
+#_(double (cont-frac (constantly 1)
+                   (constantly 1)
+                   15))
