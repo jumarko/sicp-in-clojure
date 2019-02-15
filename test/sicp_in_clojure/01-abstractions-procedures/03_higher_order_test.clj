@@ -18,15 +18,14 @@
 (deftest fixed-point
   (testing "cosine fixed point approximation"
     (is (= 0.7390822985224024
-           (sut/fixed-point #(Math/cos %) 1.0)))
-    )
+           (sut/fixed-point #(Math/cos %) 1.0))))
   (testing "sin(x) + cos(x) approximation"
     (is (= 1.2587315962971173
            (sut/fixed-point #(+  (Math/sin %) (Math/cos %)) 1.0))))
   (testing "square root approximation"
     (is (= 2.000000000000002
            (sut/sqrt 4)))))
-  
+
 (deftest golden-ratio
   (testing "Golden ratio returns correct value"
     (is (= 1.6180
@@ -34,4 +33,17 @@
                 double
                 (format "%.4f")
                 (Double/parseDouble))))))
-           
+
+
+(deftest inverse-golden-ration
+  (testing "Ex. 1.37 using recursive continued fraction"
+    (is (= 0.6180344478216819
+           (double (sut/cont-frac-rec (constantly 1)
+                                       (constantly 1)
+                                       15)))))
+  (testing "Ex. 1.37 using iterative continued fraction"
+    (is (= 0.6180344478216819
+           (double (sut/cont-frac-iter (constantly 1)
+                                       (constantly 1)
+                                       15))))))
+

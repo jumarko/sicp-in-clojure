@@ -75,6 +75,8 @@
 
 
 ;;; Let's define sqrt in terms of general fixed-point function
+
+
 (defn fixed-point [improve-fn start]
   (letfn [(iter [old new]
             (if (e/better-good-enough? old new)
@@ -124,6 +126,8 @@
 ;;; Definite integral - (p. 59-60)
 
 ;; naive approach (p.59)
+
+
 (defn integral
   "Approximates the value of definite integral of `f` between the limits `a` and `b`.
   Note: this implementation doesn't optimize tail-recursion so the dx shouldn't be smaller
@@ -476,6 +480,10 @@
 ;; The transformation x -> 1 + 1/x
 ;; derives directly from the definition x^2 = x + 1 (just divide both sides by x)
 
+;; We can also derive specific formula for phi by solving quadratic equation: http://community.schemewiki.org/?sicp-ex-1.35
+;; x^2 - x - 1 = 0
+;; x = ( 1 + sqrt(5)) / 2
+
 ;; Manually, I can compute a few values
 ;; 1 + 1/2 = 3/5
 ;; 1 + 2/3 = 5/3
@@ -509,9 +517,9 @@
         (recur f next-guess)))))
 
 #_(fixed-point-trace
- (fn [x] (/ (Math/log 1000)
-            (Math/log x)))
- 2.0)
+   (fn [x] (/ (Math/log 1000)
+              (Math/log x)))
+   2.0)
 ;; => 4.555532270803653
 
 (Math/pow 4.555532270803653 4.555532270803653)
@@ -523,35 +531,48 @@
 ;;; 1/golden_ratio can be computed as continued fraction expansion
 ;;; where N = 1,1,1, .... and also D = 1,1,1,1, ....
 ;;; Define cont-frac procedure  that approximates continued fraction by limiting expansions to number k.
-(defn- cont-frac-rec
-  [n d k i]
-  (if (>= i k)
-    (/ (n k) (d k))
-    (/ (n i)
-       (+ (d i) (cont-frac-rec n d k (inc i))))))
 
-(defn cont-frac
+(defn cont-frac-rec
   "Computes finite continued fraction using `n` to produce elements of set N,
   `d` to produce elements of set D, and k as a limit of max number of expansions"
   [n d k]
-  (cont-frac-rec n d k 1))
+  (letfn [(frac-rec [i]
+            (if (>= i k)
+              (/ (n k) (d k))
+              (/ (n i)
+                 (+ (d i) (frac-rec (inc i))))))]
+    (frac-rec 1)))
 
 ;; Check what's the value of 1/golden-ratio:
 (double (/ 1 (golden-ratio)))
 ;; => 0.6180344478216819
 
 ;; now compute it via `cont-frac` function
-(double (cont-frac (constantly 1)
-                   (constantly 1)
-                   15))
-;; => 0.6180338134001252
+(double (cont-frac-rec (constantly 1)
+                       (constantly 1)
+                       15))
+;; => 0.6180344478216819
 
 ;; Write also an iterative alternative of my `cont-frac`
-(defn- cont-frac-iter [n d k i]
-  ;; TODO
-  )
-(defn cont-frac [n d k]
-  (cont-frac-iter n d k 1))
-#_(double (cont-frac (constantly 1)
-                   (constantly 1)
-                   15))
+;; The iterative version has to work backwards from index k to 1.
+;; It first computes the value of (Nk / Dk) and then uses this to compute (N(k-1) / (D(k-1) + previous-result))
+;; It continues in this manner until it reaches index one where it returns (N(1) / (D(1) + accumulated-result))
+(defn cont-frac-iter [n d k]
+  (letfn [(frac-iter [i acc]
+            (if (< i 1)
+              acc
+              (recur (dec i) (/ (n i) (+ (d i) acc)))))]
+    (frac-iter k 0)))
+(double (cont-frac-iter (constantly 1)
+                        (constantly 1)
+                        15))
+;; => 0.6180344478216819
+;; notice that this would lead to StackOverflow when using the recursive version in Clojure
+;; BUT for some reason this still takes a lot of time :o
+#_(time (double (cont-frac2 (constantly 1)
+                            (constantly 1)
+                            5000)))
+;; "Elapsed time: 3642.036658 msecs"
+;; => 0.6180339887498948
+
+
