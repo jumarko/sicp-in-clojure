@@ -561,17 +561,24 @@
   (letfn [(frac-iter [i acc]
             (if (< i 1)
               acc
-              (recur (dec i) (/ (n i) (+ (d i) acc)))))]
+              ;; WARNING: if you don't use double coercion then the procedure will be slow for large k
+              (recur (dec i) (double (/ (n i) (+ (d i) acc))))))]
     (frac-iter k 0)))
 (double (cont-frac-iter (constantly 1)
                         (constantly 1)
                         15))
 ;; => 0.6180344478216819
 ;; notice that this would lead to StackOverflow when using the recursive version in Clojure
-;; BUT for some reason this still takes a lot of time :o
-#_(time (double (cont-frac2 (constantly 1)
-                            (constantly 1)
-                            5000)))
+;; WARNING: if you don't use double coercion in `cont-frac-iter`'s recur
+;; then this will be very slow!!! (Ratio is slow?)
+
+(time (double (cont-frac-iter (constantly 1)
+                              (constantly 1)
+                              100000)))
+;; "Elapsed time: 14.10361 msecs"
+;; => 0.6180339887498948
+
+;; Original version without double coercion and k=5000 took more than 3 seconds!!!
 ;; "Elapsed time: 3642.036658 msecs"
 ;; => 0.6180339887498948
 
