@@ -576,3 +576,28 @@
 ;; => 0.6180339887498948
 
 
+
+;;; Ex. 1.38 (p.17)
+;;; continued fraction expansion for e-2 (Euler)
+;;; Ni is always 1
+;;; Di are 1,2,1,1,4,1,1,6,1,1,8,...
+;;; => use this to approximate e
+(defn e-approximation [k]
+
+  (letfn [(divisible-by-3? [i] (zero? (mod i 3)))]
+    (+ 2.0
+       (cont-frac-iter
+        (constantly 1)
+        ;; we can compute d(i) by realizing that every third element is different from one
+        (fn di [i] (if (divisible-by-3? (inc i))
+                     (+ i (quot i 3))
+                     1))
+        k))))
+
+;; Value on wikipedia: 2.7182818284590452353602874713527
+;; Our value
+(e-approximation 1000)
+;; => 2.717162485326501
+;; I couldn't get much better value even after more iterations
+
+

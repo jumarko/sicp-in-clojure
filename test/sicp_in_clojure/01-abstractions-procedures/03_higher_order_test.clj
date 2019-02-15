@@ -34,16 +34,20 @@
                 (format "%.4f")
                 (Double/parseDouble))))))
 
-
 (deftest inverse-golden-ration
   (testing "Ex. 1.37 using recursive continued fraction"
     (is (= 0.6180344478216819
            (double (sut/cont-frac-rec (constantly 1)
-                                       (constantly 1)
-                                       15)))))
+                                      (constantly 1)
+                                      15)))))
   (testing "Ex. 1.37 using iterative continued fraction"
     (is (= 0.6180344478216819
            (double (sut/cont-frac-iter (constantly 1)
                                        (constantly 1)
                                        15))))))
+(deftest euler-approximation
+  (testing "Ex. 1.38"
+    ;; This isn't very precise but I don't know why :(
+    (is (= 2.717162485326501
+           (sut/e-approximation 100)))))
 
