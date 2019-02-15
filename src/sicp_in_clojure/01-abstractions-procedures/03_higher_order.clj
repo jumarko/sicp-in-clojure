@@ -384,9 +384,6 @@
 
 
 ;;; Half-interval method (p. 67)
-(defn close-enough? [x y]
-  (< (Math/abs (- x y))
-     0.001))
 
 (defn half-interval-search
   "Half-interval method starts with given interval (a,b) such that
@@ -394,7 +391,8 @@
   and continues halving the interval using x = avg(a, b)
   until it finds an x where f(x) = 0 (or is close enough)."
   [f neg-point pos-point]
-  (let [avg (c/avg neg-point pos-point)
+  (let [close-enough? (fn [x y] (< (Math/abs (- x y)) 0.001))
+        avg (c/avg neg-point pos-point)
         avg-val (f avg)]
     (if (close-enough? neg-point pos-point)
       avg
@@ -527,7 +525,7 @@
 ;;; Define cont-frac procedure  that approximates continued fraction by limiting expansions to number k.
 (defn- cont-frac-rec
   [n d k i]
-  (if (> i k)
+  (if (>= i k)
     (/ (n k) (d k))
     (/ (n i)
        (+ (d i) (cont-frac-rec n d k (inc i))))))
