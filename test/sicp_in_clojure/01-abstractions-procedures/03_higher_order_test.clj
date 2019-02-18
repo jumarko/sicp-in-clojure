@@ -51,3 +51,11 @@
     (is (= 2.717162485326501
            (sut/e-approximation 100)))))
 
+(deftest newtons-method
+  (testing "finds square root which is a whole number"
+    (is (= 9.0
+           (sut/sqrt-newton 81))))
+  (testing "finds square root which is a real number"
+    (is (= 1.4142135623822438
+           (sut/sqrt-newton 2)))))
+

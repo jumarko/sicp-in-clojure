@@ -608,3 +608,80 @@
 ;; I couldn't get much better value even after more iterations
 
 
+;;; Ex. 1..39 TODO
+
+
+
+
+
+;;; 1.3.4 Procedures as return values (p.72)
+;;; fixed point, average damping, Newton's method
+
+;; Going back to our sqrt function we can reimplement it using idea of "average damping"
+;; and end up with clearer implementation:
+(defn average-damp
+  "Returns a function which given `x` returns an average of `x` and `f x`.
+  Useful for fixed points to make them converge."
+  [f]
+  (fn [x] (c/avg x (f x))))
+
+(defn sqrt-damp [x]
+  (fixed-point (average-damp (fn [y] (/ x y)))
+               1.0))
+(sqrt-damp 4)
+;; => 2.000000000000002
+
+;; Newton method
+;; https://medium.com/@ruhayel/an-intuitive-and-physical-approach-to-newtons-method-86a0bd812ec3
+;; https://math.stackexchange.com/questions/350740/why-does-newtons-method-work
+;; says that to find a root of function g(x) we can find a fixed point of f(x) = x - g(x)/g'(x)
+;; where g'(x) is derivative
+
+(def dx 0.00001)
+(defn deriv
+  "Returns a function that is a derivation (approximation of)
+  of the function g."
+  [g]
+  (fn [x]
+    (/ (- (g (+ x dx)) (g x))
+       dx)))
+
+( (deriv c/square) 4)
+;; => 8.00000999952033
+
+;; first we need to get transformed version of our original function
+;; which we can then feed into fixed-point
+(defn newton-transform [g]
+  (fn [x] (- x (/ (g x)
+                  ((deriv g) x)))))
+
+(defn newtons-method [g guess]
+  (fixed-point (newton-transform g)
+               guess))
+
+(defn sqrt-newton [x]
+  (newtons-method
+   ;; function y^2 - x = 0
+   (fn [y] (- (c/square y) x))
+   1.0))
+
+(sqrt-newton 2)
+;; => 1.4142135623822438
+(sqrt-newton 81)
+;; => 9.0
+
+
+;; p.75 We can go even further and define more generic fixed point of transformed function
+(defn fixed-point-of-transform
+  "Given a function g and the transform function to convert g to f such that
+  it can be passed to the fixed-point we compute fixed point starting from the guess."
+  [g transform guess]
+  (fixed-point (transform g) guess))
+;; and we can use that to define sqrt in yet another terms
+(defn sqrt-transform [x]
+  (fixed-point-of-transform (fn [y] (/ x y))
+                            average-damp
+                            1.0))
+
+(sqrt-transform 4)
+;; => 2.000000000000002
