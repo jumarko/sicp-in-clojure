@@ -608,8 +608,8 @@
 ;; I couldn't get much better value even after more iterations
 
 
-;;; Ex. 1..39 TODO
-
+;;; Ex. 1..39 TODO?
+;;; => SKIPPED (doesn't seem to provide much value after doing all the other exercises) 
 
 
 
@@ -685,3 +685,92 @@
 
 (sqrt-transform 4)
 ;; => 2.000000000000002
+
+
+;;; Ex. 1.40 (p.77)
+;;; cubic procedure to approximate zeros of the cubic x^3 + ax^2 + bx + c.
+;;; via Newton's method:
+(defn cubic-transform [a b c]
+  (fn [x]
+    (+ (e/cube x)
+       (* a (c/square x))
+       (* b x)
+       c)))
+(defn cubic-root [a b c]
+  (newtons-method (cubic-transform a b c) 1))
+
+;; now we can compute a root of x^3 + ax^2 + bx + c; e.g.:
+(cubic-root 2 3 1)
+;; => -0.4301597090015873
+(cubic-root 1 1 1)
+;; => -0.9999999999997796
+
+
+;;; Ex. 1.41 (p.77)
+;;; double procedure which applies function twice
+(defn double
+  "Returns a function g which applies given function f of one argument twice."
+  [f]
+  (fn [x]
+    (f (f x))))
+((double inc) 1)
+;; => 3
+((double c/square) 2)
+;; => 16
+
+;; notice that it grows quadratically!
+;; applies inc 2^2^2 = 16 times
+(((double (double double)) inc) 5)
+(((double (double double)) inc) 5)
+
+;; compare two following!
+((double (double (double inc))) 5)
+;; => 13
+
+;; so it's tricky!
+(((double (double double)) inc) 5)
+;; actually exapands to:
+((double (double (double (double inc)))) 5)
+;; => 21
+
+
+;;; Ex. 1.42 (p.77)
+;;; Implement function composition for two functions of one argument
+;;; Note: similar to `double` but with two different functions
+(defn compose [f g]
+  (fn [x]
+    (f (g x))))
+
+((compose c/square inc) 6)
+;; => 49
+
+
+;;; Ex. 1.43 (p.77)
+;;; Write procedure that repeatedly applies given function n times
+
+;; let's try it using manual approach
+(defn repeated-with-double [f n]
+  (fn [x]
+    (loop [result (f x)
+           i (dec n)]
+      (if (pos? i)
+        (recur (f result) (dec i))
+        result))))
+((repeated-with-double c/square 2) 5)
+;; => 625
+
+
+;; now try it using `compose`???
+;; => Check http://community.schemewiki.org/?sicp-ex-1.43
+(defn repeated-with-compose [f n]
+  (if (< n 1)
+    (fn [x] x)
+    (compose f (repeated-with-compose f (dec n)))))
+
+((repeated-with-compose c/square 2) 5)
+;; => 625
+
+;; notice that it still works even with large number of iterations!
+((repeated-with-compose inc 2) 1000000)
+
+;;; Ex. 1.44 (p.78)
