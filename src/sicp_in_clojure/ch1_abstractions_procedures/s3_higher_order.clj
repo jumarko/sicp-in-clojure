@@ -845,9 +845,10 @@
 ;; => 10.0
 
 ;; lets' try nth root
-
+(defn log2 [n]
+  (/ (Math/log n) (Math/log 2)))
 (defn nth-root [x n]
-  (fixed-point ((double average-damp)
+  (fixed-point ((repeated average-damp (int (log2 n)))
                 (fn [y] (/ x (Math/pow y (dec n)))))
                1.0))
 
@@ -865,7 +866,41 @@
 ;; => 2.9988269636913403
 
 (nth-root 100 2)
+;; => 10.000023399641949
+;; => 10.000023399641949
 
+(nth-root 16 4)
+;; => 1.9999751575244828
+(nth-root 32 5)
+;; => 2.0000200551235574
+(nth-root 64 6)
+;; => 2.000011071925238
+(nth-root 128 7)
+;; => 2.0000106805408264
+;; BUT it doesn't converge with n=8!
+;; => we have to use average-damp at least 3 times
+(nth-root 256 8)
+;; => 2.000008820504543
+(nth-root 512 9)
+;; => 2.0000074709755573
+(nth-root 8192 13)
+;; => 2.000001923509733
+(nth-root 32768 15)
+;; => 2.0000001141598975
+;; BUT it again breaks with n=16!
+(nth-root 65536 16)
+;; => 2.000000000076957
+
+;;=> it seems that the pattern is that it breaks with n=4, n=8, n=16, n=32?
+(nth-root 4294967296 32)
+;; => 2.000000000000006
+
+;; use this to get value of 2^64
+#_(.pow (BigInteger/valueOf 2) 64)
+(nth-root 18446744073709551616 64)
+;; => 2.0000000000000853
+(nth-root 340282366920938463463374607431768211456 128)
+;; => 2.0000000000082006
 
 ;;; Exercise 1.46 (p. 78)
 
