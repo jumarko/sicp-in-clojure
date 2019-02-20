@@ -1,10 +1,10 @@
-(ns sicp-in-clojure.01-abstractions-procedures.03-higher-order
+(ns sicp-in-clojure.ch1-abstractions-procedures.s3-higher-order
   "Higher order procedures.
   Video Lecture 2A: https://www.youtube.com/watch?v=erHp3r6PbJk&list=PLE18841CABEA24090&index=3"
   (:require
-   [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]
-   [sicp-in-clojure.01-abstractions-procedures.02-procedures-and-processes :as c2]
-   [sicp-in-clojure.01-abstractions-procedures.exercise :as e]))
+   [sicp-in-clojure.ch1-abstractions-procedures.s1-elements :as c]
+   [sicp-in-clojure.ch1-abstractions-procedures.s2-procedures-and-processes :as c2]
+   [sicp-in-clojure.ch1-abstractions-procedures.exercise :as e]))
 
 ;;; Similar patterns to refactor...
 (defn sum-ints
@@ -774,3 +774,4 @@
 ((repeated-with-compose inc 2) 1000000)
 
 ;;; Ex. 1.44 (p.78)
+

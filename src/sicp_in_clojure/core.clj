@@ -1,5 +1,7 @@
 (ns sicp-in-clojure.core
-  "Core reusable functions")
+  "Core reusable functions"
+  ;; require other namespaces to get them loaded automatically
+  )
 
 ;;; helper "get-stack" functions to get better overview of space "orders of growth"
 ;;; see also `clojure.main/java-loc->source` private function

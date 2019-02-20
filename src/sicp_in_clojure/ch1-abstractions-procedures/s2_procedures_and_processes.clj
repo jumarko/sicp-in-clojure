@@ -1,4 +1,4 @@
-(ns sicp-in-clojure.01-abstractions-procedures.02-procedures-and-processes
+(ns sicp-in-clojure.ch1-abstractions-procedures.s2-procedures-and-processes
   (:require
    [sicp-in-clojure.core :refer [get-stack get-stack-depth]]))
 

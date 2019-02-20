@@ -1,8 +1,8 @@
-(ns sicp-in-clojure.01-abstractions-procedures.exercise
+(ns sicp-in-clojure.ch1-abstractions-procedures.exercise
   "All 46 exercises from the Chapter 1."
   (:require
    [sicp-in-clojure.core :refer [get-stack get-stack-depth]]
-   [sicp-in-clojure.01-abstractions-procedures.01-elements :as c]
+   [sicp-in-clojure.ch1-abstractions-procedures.s1-elements :as c]
    [clojure.string :as str]))
 
 ;;;; Note:

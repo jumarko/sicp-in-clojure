@@ -1,4 +1,4 @@
-(ns sicp-in-clojure.01-abstractions-procedures.01-elements)
+(ns sicp-in-clojure.ch1-abstractions-procedures.s1-elements)
 
 ;;; 1.1.4 Compound Procedures
 
