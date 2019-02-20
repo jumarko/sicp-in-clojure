@@ -1,7 +1,7 @@
-(ns sicp-in-clojure.01-abstractions-procedures.03-higher-order-test
+(ns sicp-in-clojure.01-abstractions-procedures.s3-higher-order-test
   (:require [clojure.test :refer [deftest is testing]]
-            [sicp-in-clojure.01-abstractions-procedures.03-higher-order :as sut]
-            [sicp-in-clojure.01-abstractions-procedures.exercise :as e]))
+            [sicp-in-clojure.ch1-abstractions-procedures.s3-higher-order :as sut]
+            [sicp-in-clojure.ch1-abstractions-procedures.exercise :as e]))
 
 (deftest half-interval-method
   (testing "pi aproximation using sin"

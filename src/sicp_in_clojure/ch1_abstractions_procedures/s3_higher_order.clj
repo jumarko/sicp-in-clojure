@@ -445,6 +445,8 @@
 
 (defn fixed-point [f first-guess]
   (let [next-guess (f first-guess)]
+    ;; be careful when debugging infinite recursions
+    #_(prn "guess: " next-guess)
     (if (close-enough? first-guess next-guess tolerance)
       next-guess
       (recur f next-guess))))
@@ -749,14 +751,14 @@
 ;;; Write procedure that repeatedly applies given function n times
 
 ;; let's try it using manual approach
-(defn repeated-with-double [f n]
+(defn repeated [f n]
   (fn [x]
     (loop [result (f x)
            i (dec n)]
       (if (pos? i)
         (recur (f result) (dec i))
         result))))
-((repeated-with-double c/square 2) 5)
+((repeated c/square 2) 5)
 ;; => 625
 
 
@@ -774,4 +776,98 @@
 ((repeated-with-compose inc 2) 1000000)
 
 ;;; Ex. 1.44 (p.78)
+;;; Smoothing a function (useful in signal processing)
+;;; smoothed function is the one which returns an average of f(x-dx), f(x), f(x+dx)
+(def smooth-dx 0.00001)
+
+(defn smooth
+  ([f]
+   (smooth f smooth-dx))
+  ([f dx]
+   (fn [x]
+     (clojure.core/double (/ (+ (f (- x dx))
+                                (f x)
+                                (f (+ x dx)))
+                             3)))))
+
+((smooth c/square) 5)
+;; => 25.000000000066663
+
+;; n-fold smoothed function (repeatedaly applied smoothing)
+;; unfortunately, it's not that easy to support both arities in this case
+(defn smooth-n
+  [f n]
+  ((repeated-with-compose smooth n) f ))
+
+;; TODO: why is this slow??
+#_((smooth-n c/square 15) 5)
+;; => 25.000000001
+
+;;; Exercise 1.45 (p. 78)
+;;; Use repeateed average damping to compute n-th roots.
+;;; Experiment how many times you have to repeate average damping to make sure that the transformed
+;;; function for fixed-point converges.
+
+;; let's start with original sqrt function
+(defn sqrt-damp [x]
+  (fixed-point (average-damp (fn [y] (/ x y)))
+               1.0))
+
+(defn third-root [x]
+  (fixed-point (average-damp (fn [y] (/ x (c/square y))))
+               1.0))
+(third-root 27)
+;; => 2.9999972321057697
+(third-root 1000)
+;; => 10.000002544054729
+
+;; following naive implementation won't converge!
+(defn fourth-root [x]
+  (fixed-point (average-damp (fn [y] (/ x (* y y y))))
+               1.0))
+;; inifinite loop 
+#_(fourth-root 81)
+;; it's oscilating like this:
+;; "guess: " 3.0099846201804814
+;; "guess: " 2.990114522211396
+;; "guess: " 3.0099837398109797
+;; "guess: " 2.990115385146659
+
+;; let's try to apply average-damp twice
+(defn fourth-root [x]
+  (fixed-point ((double average-damp)
+                (fn [y] (/ x (* y y y))))
+               1.0))
+
+(fourth-root 81)
+;; => 3.000000000000033
+(fourth-root 10000)
+;; => 10.0
+
+;; lets' try nth root
+
+(defn nth-root [x n]
+  (fixed-point ((double average-damp)
+                (fn [y] (/ x (Math/pow y (dec n)))))
+               1.0))
+
+(nth-root 81 2)
+;; => 9.000006965841198
+(nth-root 27 3)
+;; => 3.000001464168659
+(nth-root 81 4)
+;; => 3.000000000000033
+(nth-root 243 5)
+;; => 3.0000008877496294
+(nth-root 729 6)
+;; => 2.999996785898161
+(nth-root 2181 7)
+;; => 2.9988269636913403
+
+(nth-root 100 2)
+
+
+;;; Exercise 1.46 (p. 78)
+
+
 
