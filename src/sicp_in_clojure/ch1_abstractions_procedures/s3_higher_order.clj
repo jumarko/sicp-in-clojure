@@ -439,7 +439,7 @@
 
 (def tolerance 0.00001)
 
-(defn close-enough? [v1 v2 tolerance]
+(defn close-enough? [v1 v2]
   (< (c/abs (- v1 v2))
      tolerance))
 
@@ -447,7 +447,7 @@
   (let [next-guess (f first-guess)]
     ;; be careful when debugging infinite recursions
     #_(prn "guess: " next-guess)
-    (if (close-enough? first-guess next-guess tolerance)
+    (if (close-enough? first-guess next-guess)
       next-guess
       (recur f next-guess))))
 
@@ -903,6 +903,32 @@
 ;; => 2.0000000000082006
 
 ;;; Exercise 1.46 (p. 78)
+;;; Implement general procedure `iterative-improve` to start with initial guess,
+;;; check if it's good enough and iterate if not
+(defn iterative-improve [good-enough-fn improve-fn]
+  (fn [guess] 
+    (if (good-enough-fn guess)
+      guess
+      (recur (improve-fn guess)))))
 
+(defn sqrt-it [x]
+  ((iterative-improve
+    (fn [guess] (c/good-enough? guess x))
+    (fn [guess] (c/avg guess (/ x guess))))
+   1.0))
+(sqrt-it 4)
+;; => 2.0000000929222947
 
+(defn fix-it [f first-guess]
+  ((iterative-improve
+    ;; notice that f is called twice which may be inefficient
+    (fn [guess] (close-enough? guess (f guess)))
+    f)
+   1.0))
+
+(fix-it
+ (average-damp (fn [y] (/ 4 y)))
+ 1.0)
+;; => 2.0000000929222947
+ 
 
